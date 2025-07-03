@@ -8,6 +8,12 @@ import os
 
 
 api_key = os.getenv("AZURE_OPENAI_API_KEY")
+tok_url = os.getenv("TOKEN_URL")
+gr_type = os.getenv("GRANT_TYPE")
+cl_id = os.getenv("CLIENT_ID")
+cl_secret = os.getenv("CLIENT_SECRET")
+graph_url = os.getenv("GRAPHQL_URL")
+end_url = os.getenv("ENDPOINT_URL")
 
 app = FastAPI()
 
@@ -28,11 +34,11 @@ class MemberRequest(BaseModel):
 @app.post("/generate-summary")
 def generate_summary(request: MemberRequest):
     # Step 1: Get OAuth Token
-    token_url = "https://dev-ecp-api.optum.com/auth/oauth/token"
+    token_url = tok_url
     payload = {
-        "grant_type": "client_credentials",
-        "client_id": "clinicalinsights_client_nonprod",
-        "client_secret": "RJniL0US68af7fYYPm3y"
+        "grant_type": gr_type,
+        "client_id": cl_id,
+        "client_secret": cl_secret
     }
     token_response = requests.post(token_url, data=payload)
 
@@ -41,7 +47,7 @@ def generate_summary(request: MemberRequest):
     access_token = token_response.json().get("access_token")
 
     # Step 2: GraphQL Query with dynamic input
-    graphql_url = "https://dev-ecp-api.optum.com/clinicalinsights-search/graphql"
+    graphql_url = graph_url
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
@@ -143,8 +149,7 @@ def generate_summary(request: MemberRequest):
     results = process_entries_from_api(members)
 
     # Step 4: Call Azure OpenAI
-    endpoint_url = "https://hst-ai-openai-srv.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-02-15-preview"
-    api_key = api_key
+    endpoint_url = end_url
     headers = {
         "Content-Type": "application/json",
         "api-key": api_key
