@@ -175,6 +175,8 @@ def generate_summary(request: MemberRequest):
             "max_tokens": 500
         }
         response = requests.post(endpoint_url, headers=headers, json=payload)
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Failed to get response from LLM")
         summary = response.json()["choices"][0]["message"]["content"]
         summaries.append({
             "E_ID": result["id"],
